@@ -1,14 +1,16 @@
 {
+  "version": 2,
   "builds": [
     {
       "src": "app.py",
-      "use": "@vercel/python"
+      "use": "@vercel/python",
+      "config": { "maxLambdaSize": "100mb", "runtime": "python3.11" }
     }
   ],
   "routes": [
     {
       "src": "/(.*)",
-      "dest": "traffic_law_bot/chat-bot/app.py"
+      "dest": "app.py"
     }
   ]
 }
