@@ -7,4 +7,3 @@ python-dotenv
 tiktoken
 openai
 langgraph
-python-docx
