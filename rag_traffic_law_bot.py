@@ -36,8 +36,6 @@ if not all([AZURE_EMBEDDING_KEY, AZURE_EMBEDDING_ENDPOINT, AZURE_EMBEDDING_MODEL
     raise ValueError("Azure OpenAI environment variables not completely set.")
 
 # --- Chroma Config for Vercel ---
-# Vercel copies the project files to /var/task/, so we build the path from there.
-# The 'chroma_db' directory must be committed to your repository.
 current_dir = os.path.dirname(os.path.abspath(__file__))
 CHROMA_DB_DIR = os.path.join(current_dir, "chroma_db")
 COLLECTION_NAME = "traffic_law_2024"
@@ -49,6 +47,7 @@ embeddings = AzureOpenAIEmbeddings(
     azure_endpoint=AZURE_EMBEDDING_ENDPOINT,
     api_key=AZURE_EMBEDDING_KEY,
     api_version=AZURE_API_VERSION,
+    dimensions=512  # OPTIMIZATION: Match the reduced embedding dimension
 )
 
 llm = AzureChatOpenAI(
