@@ -1,12 +1,8 @@
 # render.yaml
 #
 # This configuration file tells Render how to build and deploy your
-# Traffic Law AI Assistant. It defines a persistent disk for ChromaDB
-# and a web service that uses it.
+# Traffic Law AI Assistant.
 
-disks:
-  - name: chroma-data
-    sizeGB: 1 # Adjust size if your DB grows larger
 
 services:
   # 1. Web Service for the Flask Chatbot
@@ -14,24 +10,28 @@ services:
     name: traffic-law-bot
     env: python
     rootDir: traffic_law_bot/chat-bot
-    plan: starter_plus # 'starter' might be too slow. 'standard' is also a good option.
+    plan: starter_plus # 'starter' is often too slow for AI/ML apps.
     buildCommand: |
       # Install dependencies
       pip install --upgrade pip
       pip install -r requirements.txt
-
+ 
       # Run the data ingestion pipeline. This runs on every deploy.
       # The ChromaDB data will be stored on the persistent disk.
       echo "Running document chunking..."
       python Step1_ingest_traffic_docs.py
       echo "Ingesting data into ChromaDB..."
-      python Step2_ingest_to_chroma.py 
-    startCommand: "gunicorn app:app --bind 0.0.0.0:$PORT --workers 2 --threads 2 --timeout 120"
+      python Step2_ingest_to_chroma.py
+    # Use a more robust start command for production
+    startCommand: "gunicorn --bind 0.0.0.0:$PORT --workers 2 --threads 2 --timeout 120 app:app"
     envVars:
       - key: OPENAI_API_KEY
         fromSecret: true # This will prompt you to create a secret in the Render dashboard
       - key: PYTHON_VERSION
         value: 3.12.2 # Match your local Python version
+      # Tell FFmpeg where to find its libraries, which can be an issue on Render
+      - key: LD_LIBRARY_PATH
+        value: /usr/lib/x86_64-linux-gnu/
     disk:
       name: chroma-data # Link to the disk defined above
-      mountPath: /app/traffic_law_bot/chat-bot/chroma_db
+      # The mountPath is now defined in the top-level disk definition.
